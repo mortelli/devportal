@@ -16,9 +16,9 @@ This guide goes over the exposed Enveloping methods that dApps and wallets can c
 
 ## Introduction
 
-There are multiple ways to integrate Enveloping into a system. These will be detailed in the following sections.
+There are multiple ways to integrate Enveloping into a system. These will be detailed down below.
 
-Additionally, it's important to note that not _all_ of the Enveloping components are needed for a successful integration, as mentioned in the [Architecture page](/rif/enveloping/architecture/).
+Additionally, it's important to note that not _all_ of the Enveloping components are needed for a successful integration, as explained in the following section.
 
 ## Requirements
 
@@ -26,15 +26,15 @@ Additionally, it's important to note that not _all_ of the Enveloping components
 
 These need to be deployed and their addresses known. For steps on how to do this, please refer to the [Deploy contracts locally section](/guides/rif-enveloping/install/#deploy-contracts-locally) of the Installation guide.
 
-Once deployed, you only need the RSK node to be running.
+Once deployed, you'll only need the RSK node to be running.
 
 ### Relay Server
 
-The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain component, which is a Relay Manager. The Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed.
+The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain component, which is a Relay Manager. The Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed. For more details on this, please refer to the [Architecture page](/rif/enveloping/architecture/).
 
 Users can interact with the Relay Server directly or indirectly. For the latter, a user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Managers and it sends the on-chain request to the most active one. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
 
-In any case, you need to have the server installed and running. For this please refer to the following guides:
+In any case, you'll need to have the server installed and running. To achieve this please refer to the following guides:
 1. [RIF Enveloping Installation](/guides/rif-enveloping/install/)
 2. [RIF Enveloping Launch](/guides/rif-enveloping/launch/)
 
