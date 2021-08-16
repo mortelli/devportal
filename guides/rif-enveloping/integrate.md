@@ -7,15 +7,27 @@ permalink: /guides/rif-enveloping/integrate/
 
 This guide goes over the exposed Enveloping methods that dApps and wallets can consume to provide relaying as a service, with the purpose of allowing users to pay transaction fees with tokens in a particular system.
 
-<TOC>
+[TOC]
 
-## Introduction: Relay Client & Relay Server
+## Introduction
+
+There are multiple ways to integrate Enveloping into a system. These will be detailed in the following sections.
+
+Additionally, it's important to note that not _all_ of the Enveloping components are needed for a successful integration, as mentioned in the [Architecture page](/rif/enveloping/architecture/).
+
+## Requirements
+
+### Enveloping Smart Contracts
+
+These need to be deployed and their addresses known. For steps on how to do this, please refer to the [Deploy contracts locally section](/guides/rif-enveloping/install/#deploy-contracts-locally) of the Installation guide.
+
+Once deployed, you only need the RSK node to be running.
+
+### Relay Server
 
 The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain component, which is a Relay Manager. The Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed.
 
-A user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Managers and it sends the on-chain request to the most active one. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
-
-Users can interact with the Relay Server directly or indirectly.
+Users can interact with the Relay Server directly or indirectly. For the latter, a user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Managers and it sends the on-chain request to the most active one. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
 
 ## Integration options
 

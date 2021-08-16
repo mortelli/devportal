@@ -64,7 +64,7 @@ yarn install
 yarn prepare
 ```
 
-## Deploy contracts Locally
+## Deploy contracts locally
 
 We'll use `truffle` for deploying contracts. Have an RSK node up and running in regtest mode and then execute the following on the project's root folder:
 
