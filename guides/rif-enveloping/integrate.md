@@ -5,15 +5,19 @@ tags: rif, enveloping, envelope, relay, user, guide, integrate
 permalink: /guides/rif-enveloping/integrate/
 ---
 
-Enveloping allows users to pay transaction fees with tokens. For this purpose, the system exposes methods that dApps and wallets can consume to provide Enveloping as a service.
+This guide goes over the exposed Enveloping methods that dApps and wallets can consume to provide relaying as a service, with the purpose of allowing users to pay transaction fees with tokens in a particular system.
 
-## Relay Client and Relay Server
+<TOC>
+
+## Introduction: Relay Client & Relay Server
 
 The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain component, which is a Relay Manager. The Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed.
 
 A user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Managers and it sends the on-chain request to the most active one. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
 
 Users can interact with the Relay Server directly or indirectly.
+
+## Integration options
 
 ## Using the Relay Server directly
 
