@@ -7,7 +7,12 @@ permalink: /guides/rif-enveloping/integrate/
 
 This guide goes over the exposed Enveloping methods that dApps and wallets can consume to provide relaying as a service, with the purpose of allowing users to pay transaction fees with tokens in a particular system.
 
-[TOC]
+## Table of Contents
+- [**Introduction**](#introduction)
+- [**Requirements**](#requirements)
+  - [**Enveloping Smart Contracts**](#enveloping-smart-contracts)
+  - [**Relay Server**](#relay-server)
+- [**Integration options**](#integration-options)
 
 ## Introduction
 
@@ -28,6 +33,10 @@ Once deployed, you only need the RSK node to be running.
 The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain component, which is a Relay Manager. The Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed.
 
 Users can interact with the Relay Server directly or indirectly. For the latter, a user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Managers and it sends the on-chain request to the most active one. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
+
+In any case, you need to have the server installed and running. For this please refer to the following guides:
+1. [RIF Enveloping Installation](/guides/rif-enveloping/install/)
+2. [RIF Enveloping Launch](/guides/rif-enveloping/launch/)
 
 ## Integration options
 
