@@ -40,18 +40,33 @@ In any case, you'll need to have the server installed and running. To achieve th
 
 ## Integration options
 
-## Using the Relay Server directly
+### Using the Relay Server directly
 
-The simplest option to use Enveloping in your wallet or dApp is by calling the Relay Server directly. The instructions for running a Relayer are here. The communication with the Relay Server is through HTTP requests.
+The simplest option to use Enveloping in your wallet or dApp is by calling the Relay Server directly. The instructions for running a Relayer are here. The communication with the Relay Server is done through HTTP requests.
 
-The order of events for relaying transactions or deploying smart wallets through the Relay Server is
+The order of events for relaying transactions or deploying smart wallets through the Relay Server is:
 1. Create a relay or deploy request.
 2. Sign the structure (the wrapped transaction) using the EIP712 signature.
 3. Create the metadata with the signature.
 4. With the relay or deploy request and the metadata, create an HTTP request.
 5. Call the HTTP Server `/relay` method using an HTTP POST request.
 
-## Using a Relay Provider
+#### Custom worker replenish function in the Relay Server
+
+Each relayed transaction is signed by a Relay Worker account. The worker accounts are controlled by the Relay Manager. When a relay worker signs and relays a transaction, the cost for that transaction is paid using the funds in that worker's account. If the transaction is not subsidized, then the worker is compensated with tokens.
+
+Worker accounts must always have some minimum balance to pay gas for the transaction. These balances can be managed by implementing a replenishment strategy. The Relay Manager can use the strategy to top off a relay worker's account when the balance gets too low.
+
+We provide a default implementation for a replenishment strategy.  Enveloping solution integrators can implement their own replenish strategy.
+
+To implement and use your own replenish strategy:
+
+1. In the folder `src/relayserver`, open `ReplenishFunction.ts` with a text editor.
+2. On the function `replenishStrategy` write your new replenish strategy.
+3. Re build the project `yarn && yarn prepare`
+4. Add the command `--customReplenish` when running a Relay Server or change the config json file to set `customReplenish` on true.
+
+### Using a Relay Provider
 
 Another option is to use Enveloping through a Relay Provider. The latter wraps web3, and then all transactions and calls are made through the Relay Provider. If a Relay Client is not provided then the Relay Provider creates an instance.
 
@@ -177,71 +192,56 @@ Before running this example, you need to know a few requirements:
         await customSmartWalletRelayVerifier.methods.acceptToken(tokenAddress).send({from: accounts[0]});
    ```
 
-## Using the Enveloping Utils as a library
+### Using the Enveloping Utils as a library
 
-As we mentioned in the [documentation](), an advantage of the Enveloping's solution is the chance to have a token's wallet without deploying it. When a user needs to use her tokens, she needs to deploy the smart wallet using a deploy request. Thereby, when a gas-less account sent a transaction through Enveloping, they could use their smart wallet address to pay for the gas.
+An advantage of the Enveloping solution is the chance to have tokens in a wallet without deploying said wallet. When a user needs to use their tokens, they must deploy the smart wallet using a deploy request. Thereby, when a gasless account sends a transaction through Enveloping, they could use their smart wallet address to pay for the gas.
 
-As a simplification of the process, the Enveloping Utils is provided to use as a library. It simplifies the process to create an smart wallet and therefore relay a transaction. It gives the chance to the developers to propose their provider to sign the transaction. The functions that the developer should code on the provider are `sign` and `verifySign`.
+The Enveloping Utils is provided to use as a library. This simplifies the process to create a smart wallet and therefore relay a transaction. It gives the chance to the developers to propose their provider to sign the transaction. The functions that the developer should code on the provider are `sign` and `verifySign`.
 
 ```typescript
-//Initialize the Enveloping Utils
-const partialConfig: Partial<EnvelopingConfig> =
-    {
-      relayHubAddress: relayHub.address,
-      smartWalletFactoryAddress: factory.address,
-      chainId: chainId,
-      relayVerifierAddress: relayVerifier.address,  // The verifier that will verify the relayed transaction
-      deployVerifierAddress: deployVerifier.address, // The verifier that will verify the smart wallet deployment
-      preferredRelays: ['http://localhost:8090'], //If there is a preferred relay server.
+  // Initialize the Enveloping Utils
+  const partialConfig: Partial<EnvelopingConfig> =
+      {
+        relayHubAddress: relayHub.address,
+        smartWalletFactoryAddress: factory.address,
+        chainId: chainId,
+        relayVerifierAddress: relayVerifier.address,  // the verifier that will verify the relayed transaction
+        deployVerifierAddress: deployVerifier.address, // the verifier that will verify the smart wallet deployment
+        preferredRelays: ['http://localhost:8090'], // if there is a preferred relay server
+      }
+      config = configure(partialConfig)
+      enveloping = new Enveloping(config, web3, workerAddress)
+      await enveloping._init()
+
+  // Instances a signature provider 
+  // testing ONLY, please DO NOT use in production
+  const signatureProvider: SignatureProvider = {
+      sign: (dataToSign: TypedRequestData, privKey?: Buffer) => {
+        return sigUtil.signTypedData_v4(privKey, { data: dataToSign })
+      },
+      verifySign: (signature: PrefixedHexString, dataToSign: TypedRequestData, request: RelayRequest|DeployRequest) => {
+        const rec = sigUtil.recoverTypedSignature_v4({
+          data: dataToSign,
+          sig: signature
+        })
+        return isSameAddress(request.request.from, rec)
+      }
     }
-    config = configure(partialConfig)
-    enveloping = new Enveloping(config, web3, workerAddress)
-    await enveloping._init()
 
-//Instances a signature provider: This is just for test, please DO NOT use in production.
+  // Deploying a Smart Wallet
+  const deployRequest = await enveloping.createDeployRequest(senderAddress, deploymentGasLimit, tokenContract, tokenAmount, tokenGas, gasPrice, index)
+  const deploySignature = enveloping.signDeployRequest(signatureProvider, deployRequest)
+  const httpDeployRequest = await enveloping.generateDeployTransactionRequest(deploySignature, deployRequest)
+  const sentDeployTransaction = await enveloping.sendTransaction(localhost, httpDeployRequest)
+  sentDeployTransaction.transaction?.hash(true).toString('hex') // this is used to get the transaction hash
 
-const signatureProvider: SignatureProvider = {
-    sign: (dataToSign: TypedRequestData, privKey?: Buffer) => {
-      // @ts-ignore
-      return sigUtil.signTypedData_v4(privKey, { data: dataToSign })
-    },
-    verifySign: (signature: PrefixedHexString, dataToSign: TypedRequestData, request: RelayRequest|DeployRequest) => {
-      // @ts-ignore
-      const rec = sigUtil.recoverTypedSignature_v4({
-        data: dataToSign,
-        sig: signature
-      })
-      return isSameAddress(request.request.from, rec)
-    }
-  }
-
-//Deploying a Smart Wallet
-const deployRequest = await enveloping.createDeployRequest(senderAddress, deploymentGasLimit, tokenContract, tokenAmount, tokenGas, gasPrice, index)
-const deploySignature = enveloping.signDeployRequest(signatureProvider, deployRequest)
-const httpDeployRequest = await enveloping.generateDeployTransactionRequest(deploySignature, deployRequest)
-const sentDeployTransaction = await enveloping.sendTransaction(localhost, httpDeployRequest)
-sentDeployTransaction.transaction?.hash(true).toString('hex') //This is used to get the transaction hash
-
-const encodedFunction = testRecipient.contract.methods.emitMessage('hello world').encodeABI()
-const relayRequest = await enveloping.createRelayRequest(gaslessAccount.address, testRecipient.address, smartWalletAddress, encodedFunction, gasLimit, tokenContract, tokenAmount, tokenGas)
-const relaySignature = enveloping.signRelayRequest(signatureProvider, relayRequest, gaslessAccount.privateKey)
-const httpRelayRequest = await enveloping.generateRelayTransactionRequest(relaySignature, relayRequest)
-const sentRelayTransaction = await enveloping.sendTransaction(localhost, httpRelayRequest)
-sentRelayTransaction.transaction?.hash(true).toString('hex') //This is used to get the transaction hash
+  // Relaying a transaction
+  const encodedFunction = testRecipient.contract.methods.emitMessage('hello world').encodeABI()
+  const relayRequest = await enveloping.createRelayRequest(gaslessAccount.address, testRecipient.address, smartWalletAddress, encodedFunction, gasLimit, tokenContract, tokenAmount, tokenGas)
+  const relaySignature = enveloping.signRelayRequest(signatureProvider, relayRequest, gaslessAccount.privateKey)
+  const httpRelayRequest = await enveloping.generateRelayTransactionRequest(relaySignature, relayRequest)
+  const sentRelayTransaction = await enveloping.sendTransaction(localhost, httpRelayRequest)
+  sentRelayTransaction.transaction?.hash(true).toString('hex') // this is used to get the transaction hash
 ```
 
-
-## Custom worker replenish function in the Relay Server
-
-Each relayed transaction is signed by a Relay Worker account. The worker accounts are controlled by the Relay Manager. When a relay worker signs and relays a transaction, the cost for that transaction is paid using the funds in that worker's account. If the transaction is not subsidized, then the worker is compensated with tokens.
-
-Worker accounts must always have some minimum balance to pay gas for the transaction. These balances can be managed by implementing a replenishment strategy. The Relay Manager can use the strategy to top off a relay worker's account when the balance gets too low.
-
-We provide a default implementation for a replenishment strategy.  Enveloping solution integrators can implement their own replenish strategy.
-
-To implement and use your own replenish strategy:
-
-1. In the folder `src/relayserver`, open `ReplenishFunction.ts` with a text editor.
-2. On the function `replenishStrategy` write your new replenish strategy.
-3. Re build the project `yarn && yarn prepare`
-4. Add the command `--customReplenish` when running a Relay Server or change the config json file to set `customReplenish` on true.
+It's expected for this component to expand soon given the development of an SDK.
