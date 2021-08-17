@@ -13,6 +13,10 @@ This guide goes over the exposed Enveloping methods that dApps and wallets can c
   - [**Enveloping Smart Contracts**](#enveloping-smart-contracts)
   - [**Relay Server**](#relay-server)
 - [**Integration options**](#integration-options)
+  - [**Using the Relay Server directly**](#using-the-relay-server-directly)
+    - [**Custom worker replenish function**](#custom-worker-replenish-function)
+  - [**Using a Relay Provider**](#using-a-relay-provider)
+  - [**Using Enveloping Utils as a library**](#using-enveloping-utils-as-a-library)
 
 ## Introduction
 
@@ -51,7 +55,7 @@ The order of events for relaying transactions or deploying smart wallets through
 4. With the relay or deploy request and the metadata, create an HTTP request.
 5. Call the HTTP Server `/relay` method using an HTTP POST request.
 
-#### Custom worker replenish function in the Relay Server
+#### Custom worker replenish function
 
 Each relayed transaction is signed by a Relay Worker account. The worker accounts are controlled by the Relay Manager. When a relay worker signs and relays a transaction, the cost for that transaction is paid using the funds in that worker's account. If the transaction is not subsidized, then the worker is compensated with tokens.
 
@@ -70,6 +74,8 @@ To implement and use your own replenish strategy:
 
 Another option is to use Enveloping through a Relay Provider. The latter wraps web3, and then all transactions and calls are made through the Relay Provider. If a Relay Client is not provided then the Relay Provider creates an instance.
 
+Here's a sample typescript snippet for deploying a Smart Wallet address as well as relaying a transaction through the use of the Relay Provider.
+
 ```typescript
     import { RelayProvider, resolveConfiguration } from "@rsksmart/enveloping";
     import Web3 from "web3";
@@ -78,9 +84,11 @@ Another option is to use Enveloping through a Relay Provider. The latter wraps w
 
     const web3 = new Web3("http://localhost:4444");
 
-    const smartWalletFactoryAbi = {};// some json containing the abi of the smart wallet factory contract.
-    const smartWalletFactoryAddress = "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701"; // the smart wallet factort contract address (can be retrieved from the summary of the deployment).
-    const smartWalletIndex = 0; // the index of the smart wallet
+    const smartWalletFactoryAbi = {
+      // JSON data containing the abi of the smart wallet factory contract
+    }; 
+    const smartWalletFactoryAddress = "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701"; // the smart wallet factory contract address (can be retrieved from the deployment summary)
+    const smartWalletIndex = 0; // the index of the smart wallet to use (leave as 0 for default behavior)
 
     const smartWalletAddress = await new web3.eth.Contract(
         smartWalletFactoryAbi,
@@ -89,36 +97,37 @@ Another option is to use Enveloping through a Relay Provider. The latter wraps w
         account.address,
         ZERO_ADDRESS,
         smartWalletIndex
-    ).call();
+    ).call(); // this will generate an address for the Smart Wallet to be deployed
 
-    const relayVerifierAddress = "0x74Dc4471FA8C8fBE09c7a0C400a0852b0A9d04b2"; // the relay verifier contract address (can be retrieved from the summary of the deployment).
-    const deployVerifierAddress = "0x1938517B0762103d52590Ca21d459968c25c9E67"; // the deploy verifier contract address (can be retrieved from the summary of the deployment).
+    const relayVerifierAddress = "0x74Dc4471FA8C8fBE09c7a0C400a0852b0A9d04b2"; // the relay verifier contract address (can be retrieved from the deployment summary)
+    const deployVerifierAddress = "0x1938517B0762103d52590Ca21d459968c25c9E67"; // the deploy verifier contract address (can be retrieved from the deployment summary)
 
     const config = await resolveConfiguration(web3.currentProvider,
         {
-            verbose: window.location.href.includes("verbose"),
+            verbose: true,
             onlyPreferredRelays: true,
-            preferredRelays: ["http://localhost:8090"],
+            preferredRelays: ["http://localhost:8090"], // replace with your own if necessary
             factory: smartWalletFactoryAddress,
             gasPriceFactorPercent: 0,
             relayLookupWindowBlocks: 1e5,
-            chainId: 33,
+            chainId: 33, // regtest
             relayVerifierAddress,
             deployVerifierAddress,
             smartWalletFactoryAddress
         });
-        resolvedConfig.relayHubAddress = "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701"; // the relay hub contract address (can be retrieved from the summary of the deployment).
+    config.relayHubAddress = "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701"; // the relay hub contract address (can be retrieved from the deployment summary)
 
     const provider = new RelayProvider(web3.currentProvider, config);
 
-    provider.addAccount(account);
+    provider.addAccount(account); // see note down below
 
     web3.setProvider(provider);
 
-    const tokenContract = "0x0E569743F573323F430B6E14E5676EB0cCAd03D9"; // token address to use on smart wallet
-    const tokenAmount = "100"; // total token amount for the smart wallet, the smart wallet address should have more than this number before calling the deploy.
+    // Deploy Smart Wallet
 
-    // deploy smart wallet
+    const tokenContract = "0x0E569743F573323F430B6E14E5676EB0cCAd03D9"; // token address to use on smart wallet
+    const tokenAmount = "100"; // total token amount for the smart wallet, the smart wallet address should have a balance greater than this number before calling the deploy
+
     const deployTransaction = await provider.deploySmartWallet({
         from: account.address,
         to: ZERO_ADDRESS,
@@ -136,12 +145,13 @@ Another option is to use Enveloping through a Relay Provider. The latter wraps w
         smartWalletAddress
     });
 
-    // relay transaction
+    // Relay Transaction
+
     const unsigned_tx = {
-        // some common web3 transaction with the common parameters.
+        // some common web3 transaction with the usual parameters
     };
 
-    const tokenAmountForRelay = "10";
+    const tokenAmountForRelay = "10"; // how many tokens will be used to pay for the relaying. if left at 0, transaction will be sponsored
 
     const relayTransaction = web3.eth.sendTransaction({
         from: account.address,
@@ -156,7 +166,19 @@ Another option is to use Enveloping through a Relay Provider. The latter wraps w
 ```
 
 **Note: in the example above the `account` object is assumed as an object containing the address (as string) and
-the privateKey (as buffer)**
+the privateKey (as buffer), like so:**
+
+```typescript
+decryptedAccount = web3.eth.accounts.privateKeyToAccount(_privateKey);
+const account = {
+  address: decryptedAccount.address,
+  privateKey: Buffer.from(
+    decryptedAccount.privateKey.replaceAll("0x", ""),
+    "hex"
+  ),
+  privateKeyString: decryptedAccount.privateKey,
+}
+``` 
 
 Before running this example, you need to know a few requirements:
 
@@ -192,11 +214,11 @@ Before running this example, you need to know a few requirements:
         await customSmartWalletRelayVerifier.methods.acceptToken(tokenAddress).send({from: accounts[0]});
    ```
 
-### Using the Enveloping Utils as a library
+### Using Enveloping Utils as a library
 
 An advantage of the Enveloping solution is the chance to have tokens in a wallet without deploying said wallet. When a user needs to use their tokens, they must deploy the smart wallet using a deploy request. Thereby, when a gasless account sends a transaction through Enveloping, they could use their smart wallet address to pay for the gas.
 
-The Enveloping Utils is provided to use as a library. This simplifies the process to create a smart wallet and therefore relay a transaction. It gives the chance to the developers to propose their provider to sign the transaction. The functions that the developer should code on the provider are `sign` and `verifySign`.
+The Enveloping Utils are provided to use as a library. This simplifies the process to create a smart wallet and therefore relay a transaction. It gives the chance to the developers to propose their provider to sign the transaction. The functions that the developer should code on the provider are `sign` and `verifySign`.
 
 ```typescript
   // Initialize the Enveloping Utils
