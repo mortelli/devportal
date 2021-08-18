@@ -88,6 +88,9 @@ Here's an example of how the HTTP Relay Request might look like:
 }
 ```
 
+Here are some useful resources to help you manually put these structures together:
+
+
 #### Custom worker replenish function
 
 Each relayed transaction is signed by a Relay Worker account. The worker accounts are controlled by the Relay Manager. When a relay worker signs and relays a transaction, the cost for that transaction is paid using the funds in that worker's account. If the transaction is not subsidized, then the worker is compensated with tokens.
@@ -181,7 +184,12 @@ Here's a sample typescript snippet for deploying a Smart Wallet address as well 
     // Relay Transaction
 
     const unsigned_tx = {
-        // some common web3 transaction with the usual parameters
+      // some common web3 transaction with the usual parameters, for example:
+      "nonce": "0x0",
+      "to": "0xAfA16A8d7a94550079014D537e9440ddB7765d29",
+      "value": "0x00",
+      "data": "0x0a798f2400000000000000000000000020ff84b8da5034b51cf3dfdc7a92d2b7c3b6a2f30000000000000000000000001938517b0762103d52590ca21d459968c25c9e6700000000000000000000000000000000000000000000000000000000000001f4",
+      "chainId": "33"
     };
 
     const tokenAmountForRelay = "10"; // how many tokens will be used to pay for the relaying. if left at 0, transaction will be sponsored
