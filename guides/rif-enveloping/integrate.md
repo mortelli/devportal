@@ -55,6 +55,39 @@ The order of events for relaying transactions or deploying smart wallets through
 4. With the relay or deploy request and the metadata, create an HTTP request.
 5. Call the HTTP Server `/relay` method using an HTTP POST request.
 
+Here's an example of how the HTTP Relay Request might look like:
+
+```json
+{
+  "relayRequest": {
+    "request": {
+      "relayHub": "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701",
+      "to": "0xafa16a8d7a94550079014d537e9440ddb7765d29",
+      "data": "0x0a798f2400000000000000000000000020ff84b8da5034b51cf3dfdc7a92d2b7c3b6a2f300000000000000000000000074dc4471fa8c8fbe09c7a0c400a0852b0a9d04b200000000000000000000000000000000000000000000000000000000000001f4",
+      "from": "0x20ff84b8da5034b51cf3dfdc7a92d2b7c3b6a2f3",
+      "value": "0x0",
+      "nonce": "0",
+      "gas": "92705",
+      "tokenAmount": "6",
+      "tokenGas": "16368",
+      "tokenContract": "0x1Af2844A588759D0DE58abD568ADD96BB8B3B6D8"
+    },
+    "relayData": {
+      "gasPrice": "60000000",
+      "callVerifier": "0x74Dc4471FA8C8fBE09c7a0C400a0852b0A9d04b2",
+      "domainSeparator": "0xee8f106669d0f00ba21e4d25a7b02337c48fef88b142c67e6c9db7b2bc5b45d3",
+      "callForwarder": "0xD13377bAaE7D7Ef60bfeb95B6e4E6e66ca371618",
+      "relayWorker": "0x20bd539d672b605278f98cef7ee94d59bc3f1f17"
+    }
+  },
+  "metadata": {
+    "relayHubAddress": "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701",
+    "signature": "0xa28883f3072c3a5a5f77153540382e8bdfd2c91b74614b9e8cb84ecd3ba588f03c20793e44c567cfefebdf4e34872da83706c7f55af5c467aa47e622d08718511b",
+    "relayMaxNonce": 5
+  }
+}
+```
+
 #### Custom worker replenish function
 
 Each relayed transaction is signed by a Relay Worker account. The worker accounts are controlled by the Relay Manager. When a relay worker signs and relays a transaction, the cost for that transaction is paid using the funds in that worker's account. If the transaction is not subsidized, then the worker is compensated with tokens.
@@ -165,19 +198,18 @@ Here's a sample typescript snippet for deploying a Smart Wallet address as well 
     });
 ```
 
-**Note: in the example above the `account` object is assumed as an object containing the address (as string) and
-the privateKey (as buffer), like so:**
+**Note**: in the example above the `account` object is assumed as an object containing the address (as string) and the privateKey (as buffer). This is just an example, **DO NOT** use this in production:
 
 ```typescript
-decryptedAccount = web3.eth.accounts.privateKeyToAccount(_privateKey);
-const account = {
-  address: decryptedAccount.address,
-  privateKey: Buffer.from(
-    decryptedAccount.privateKey.replaceAll("0x", ""),
-    "hex"
-  ),
-  privateKeyString: decryptedAccount.privateKey,
-}
+  decryptedAccount = web3.eth.accounts.privateKeyToAccount(_privateKey);
+  const account = {
+    address: decryptedAccount.address,
+    privateKey: Buffer.from(
+      decryptedAccount.privateKey.replaceAll("0x", ""),
+      "hex"
+    ),
+    privateKeyString: decryptedAccount.privateKey,
+  }
 ``` 
 
 Before running this example, you need to know of a few requirements:
