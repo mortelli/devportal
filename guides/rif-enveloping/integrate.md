@@ -36,7 +36,7 @@ Once deployed, you'll only need the RSK node to be running.
 
 The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain component, which is a Relay Manager. The Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed. For more details on this, please refer to the [Architecture page](/rif/enveloping/architecture/).
 
-Users can interact with the Relay Server directly or indirectly. For the latter, a user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Managers and it sends the on-chain request to the most active one. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
+Users can interact with the Relay Server directly or indirectly. For the latter, a user can communicate with a Relay Server through a Relay Client. A Relay Client knows the addresses of different Relay Servers and it can send on-chain requests to any one of them. The Relay Client then sends the transaction to be sponsored to the Relay Server via HTTP request.
 
 In any case, you'll need to have the server installed and running. To achieve this please refer to the following guides:
 1. [RIF Enveloping Installation](/guides/rif-enveloping/install/)
