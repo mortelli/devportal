@@ -8,7 +8,7 @@ permalink: /guides/rif-enveloping/launch/
 ## Run the Relay Server
 To start the relay server, you need to configure the json config file located at `<PROJECT_ROOT>/jsrelay/config/relay-config.json` which has this structure:
    
-```
+```json
 {
   "url": "localhost",
   "port": 8090,
@@ -48,7 +48,7 @@ If it's the first time you run the relay server, you will see a log saying that 
 Once the relay server is up, you need to register this server in order for it to be usable, to do so, first configure the script located on `<PROJECT_ROOT>/scripts/registerRelayServer` and replace the 
    values as you consider. The script contains the following:
 
-```
+```bash
 node dist/src/cli/commands/enveloping.js relayer-register --funds 100 --stake 200 --network http://rsk-node:4444/ --hub "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701"
 ```
 
@@ -71,13 +71,28 @@ Relayer state: READY
 
 1.  In another terminal run `curl http://localhost:8090/getaddr`, which will return a JSON with information of the running jsRelay Server, for example:
 ```json
-{"relayWorkerAddress":"0xe722143177fe9c7c58057dc3d98d87f6c414dc95","relayManagerAddress":"0xe0820002dfaa69cbf8add6a738171e8eb0a5ee54",
-"relayHubAddress":"0x38bebd507aBC3D76B10d61f5C95668e1240D087F", "minGasPrice":"6000000000", "chainId":"31", "networkId":"31","ready":false,"version":"2.0.1"}
+{
+  "relayWorkerAddress": "0xe722143177fe9c7c58057dc3d98d87f6c414dc95",
+  "relayManagerAddress": "0xe0820002dfaa69cbf8add6a738171e8eb0a5ee54",
+  "relayHubAddress": "0x38bebd507aBC3D76B10d61f5C95668e1240D087F",
+  "minGasPrice": "6000000000",
+  "chainId": "31",
+  "networkId": "31",
+  "ready": false,
+  "version": "2.0.1"
+}
 ```
 2. Send to relayManagerAddress at least 0.001 tRBTC to set it up
 3. Send to relayWorkerAddress at least 0.001 tRBTC to set it up
-4. Once both addresses have been funded, run `node dist/src/cli/commands/enveloping.js relayer-register --network <RSKJ_NODE_URL> --hub <RELAY_HUB_CONTRACT_ADDRESS> -m <secret_mnemonic> --from <ADDRESS>  --funds <FUNDS> --stake <STAKE> --relayUrl <RELAY_URL>` where `<secret_mnemonic>` contains the path to a file with the mnemonic of a funded account to use during the relay server registration, `<ADDRESS>` is the account address associated to that mnemonic.
+4. Once both addresses have been funded, run:
 
+```bash
+node dist/src/cli/commands/enveloping.js relayer-register --network <RSKJ_NODE_URL> --hub <RELAY_HUB_CONTRACT_ADDRESS> -m <secret_mnemonic> --from <ADDRESS>  --funds <FUNDS> --stake <STAKE> --relayUrl <RELAY_URL>
+``` 
+
+where: 
+- `<secret_mnemonic>` contains the path to a file with the mnemonic of a funded account to use during the relay server registration
+- `<ADDRESS>` is the account address associated to that mnemonic.
 
 ## Allow tokens
 
@@ -85,10 +100,9 @@ Now the final step is to allow some tokens to be used by enveloping on the smart
 
 ### On Regtest
 
-On regtest you can use a script located at `<PROJECT_ROOT>/scripts/allowTokens` this script needs to be configured, it looks
-   something like this:
+On regtest you can use a script located at `<PROJECT_ROOT>/scripts/allowTokens`. This script needs to be configured, and this is what it looks like:
    
-```
+```bash
 #!/bin/bash
 
 TOKEN_ADDRESSES="0x0E569743F573323F430B6E14E5676EB0cCAd03D9,0x1Af2844A588759D0DE58abD568ADD96BB8B3B6D8"
