@@ -112,8 +112,4 @@ npx truffle migrate --network rsktestnet
 ``` 
 *Disclaimer: to use testnet, you should have an unlocked account with funds or configure it in `truffle.js`.*
 
-<<<<<<< HEAD
 These contracts have been deployed on Testnet. See [here](/rif/enveloping/contracts/) for their addresses.
-=======
-These contracts have been deployed on Testnet. See [here](/rif/enveloping/testnet/) for their addresses.
->>>>>>> origin/master
