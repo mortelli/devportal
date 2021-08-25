@@ -37,7 +37,7 @@ Where:
 - **logLevel**: is the log level for the relay server.
 - **workdir**: is the absolute path to the folder where the server will store the database and all its data.
 
-Now use the command `yarn relay` (on the root of the relay project) to start the relay server.
+Afterwards, run `yarn relay` to start the server.
 
 If it's the first time the server is run, some logs will state that the server isn't ready and that some values are wrong. This is expected, you just need to register the server on the relay hub in order for it to be usable by the clients.
 
