@@ -45,8 +45,7 @@ If it's the first time you run the relay server, you will see a log saying that 
 
 ### On Regtest
 
-Once the relay server is up, you need to register this server in order for it to be usable, to do so, first configure the script located on `<PROJECT_ROOT>/scripts/registerRelayServer` and replace the 
-   values as you consider. The script contains the following:
+Once the relay server is up, you need to register this server in order for it to be usable, to do so, first configure the script located on `<PROJECT_ROOT>/scripts/registerRelayServer` and replace the values as you see fit. The script contains the following:
 
 ```bash
 node dist/src/cli/commands/enveloping.js relayer-register --funds 100 --stake 200 --network http://rsk-node:4444/ --hub "0x3bA95e1cccd397b5124BcdCC5bf0952114E6A701"
