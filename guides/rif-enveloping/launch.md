@@ -68,7 +68,7 @@ Relayer state: READY
 
 ### On Testnet
 
-1.  In another terminal run `curl http://localhost:8090/getaddr`, which will return a JSON with information of the running jsRelay Server, for example:
+1.  In another terminal run `curl http://<SERVER_URL>/getaddr`, which will return a JSON with information of the running jsRelay Server, for example:
 ```json
 {
   "relayWorkerAddress": "0xe722143177fe9c7c58057dc3d98d87f6c414dc95",
