@@ -34,9 +34,9 @@ Once deployed, you'll only need the RSK node to be running.
 
 ### Relay Server
 
-The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain components, chiefly the Relay Hub. The Relay Hub manages information about the Relay Worker and Relay Managers, but also communicates with the rest of the on-chain components in turn: the Smart Wallets, Factory and Verifier contracts.
+The Relay Server is the off-chain component in charge of receiving transactions and sending them to the on-chain components, chiefly the Relay Hub. The Relay Hub manages information about the Relay Workers and Relay Managers, but also communicates with the rest of the on-chain components in turn: the Smart Wallets, Factory and Verifier contracts.
 
-The Relay Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed. In the case of a happy flow, transactions will ultimately be relayed through the Relay Hub, using the EIP712 library.
+The Relay Manager owns Relay Worker accounts with funds in native coin. To relay a transaction, a Worker signs it and sends it to the Relay Hub paying for the gas consumed. In the case of a happy flow, transactions will ultimately be relayed through the Relay Hub, using the EIP-712 library.
 
 For more details on this, please refer to the [Architecture page](/rif/enveloping/architecture/).
 
